@@ -12,10 +12,11 @@ import { getGithubCards, putGithubCard } from '@/utils/api';
 
 import { updateCardDebounced } from './helpers/updateCardDebounced';
 
-export const cardsEntriesAtom = atom<Record<string, { isDragging: boolean } & GithubCard>>(
-  {},
-  'cardsEntriesAtom'
-);
+interface GithubCardDragging extends GithubCard {
+  isDragging: boolean;
+}
+
+export const cardsEntriesAtom = atom<Record<string, GithubCardDragging>>({}, 'cardsEntriesAtom');
 
 export const fetchCards = reatomAsync(
   async () => {
@@ -26,7 +27,7 @@ export const fetchCards = reatomAsync(
     name: 'fetchCards',
     onFulfill: (ctx) => {
       const cards = ctx.get(fetchCards.dataAtom);
-      const byId = cards.reduce(
+      const byId = cards.reduce<Record<string, GithubCardDragging>>(
         (acc, card) => ({ ...acc, [card.id]: { ...card, isDragging: false } }),
         {}
       );
@@ -36,7 +37,7 @@ export const fetchCards = reatomAsync(
 ).pipe(withDataAtom([]), withErrorAtom());
 
 export interface SelectState {
-  id: GithubCard['id'] | null;
+  id: GithubCardDragging['id'] | null;
   offset: {
     x: number;
     y: number;
@@ -76,7 +77,7 @@ export const positionChange = action(async (ctx, payload) => {
 
   cardsEntriesAtom(ctx, (prev) => ({ ...prev, [id]: updatedCard }));
 
-  updateCardDebounced(id, updatedCard);
+  await updateCardDebounced(id, updatedCard);
 }, 'positionChange');
 
 export const incrementReaction = action(

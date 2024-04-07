@@ -1,4 +1,4 @@
-import { useAtom, useCtx } from '@reatom/npm-react';
+import { reatomComponent } from '@reatom/npm-react';
 
 import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui/badge';
@@ -10,9 +10,8 @@ interface CardInfoProps {
   id: number;
 }
 
-const CardInfo = ({ id }: CardInfoProps) => {
-  const ctx = useCtx();
-  const [card] = useAtom((ctx) => ctx.spy(cardsEntriesAtom)[id]);
+const CardInfo = reatomComponent<CardInfoProps>(({ ctx, id }) => {
+  const card = ctx.spy(cardsEntriesAtom)[id];
 
   return (
     <div className='flex gap-2'>
@@ -34,10 +33,10 @@ const CardInfo = ({ id }: CardInfoProps) => {
       ))}
     </div>
   );
-};
+}, 'CardInfo');
 
-const ReactionCount = () => {
-  const [cardsEntities] = useAtom(cardsEntriesAtom);
+const ReactionCount = reatomComponent(({ ctx }) => {
+  const cardsEntities = ctx.spy(cardsEntriesAtom);
 
   const reactionsCount = Object.values(cardsEntities).reduce((acc, cardsEntity) => {
     return acc + Object.values(cardsEntity.reactions).reduce((acc, value) => acc + value, 0);
@@ -48,11 +47,12 @@ const ReactionCount = () => {
       reactions count: <b>{reactionsCount}</b>
     </p>
   );
-};
+}, 'ReactionCount');
 
-export const Info = () => {
-  const [cards] = useAtom(fetchCards.dataAtom);
-  const [{ id: selectedCardId }] = useAtom(selectAtom);
+export const Info = reatomComponent(({ ctx }) => {
+  const cards = ctx.spy(fetchCards.dataAtom);
+
+  const { id: selectedCardId } = ctx.spy(selectAtom);
 
   return (
     <div className='absolute left-5 top-20'>
@@ -86,4 +86,4 @@ export const Info = () => {
       )}
     </div>
   );
-};
+}, 'Info');
