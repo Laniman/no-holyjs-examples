@@ -1,10 +1,9 @@
 import { atom, reatomAsync } from '@reatom/framework';
 import { reatomTimer } from '@reatom/timer';
-import { profileAtom, sessionAtom } from '@reatom-variant/model';
+import { fetchProfile, sessionAtom, tokenAtom } from '@reatom-variant/model';
 import { router } from '@redux-thunk-variant/router.ts';
 import { toast } from 'sonner';
 
-import { COOKIE } from '@/utils';
 import {
   postOtpEmail,
   postOtpPhone,
@@ -70,9 +69,8 @@ export const signInSubmit = reatomAsync(async (ctx, payload) => {
     }
 
     if ('profile' in postSignInLoginResponse.data) {
-      localStorage.setItem(COOKIE.ACCESS_TOKEN, postSignInLoginResponse.data.token);
-
-      profileAtom(ctx, postSignInLoginResponse.data.profile);
+      tokenAtom(ctx, postSignInLoginResponse.data.token);
+      fetchProfile.dataAtom(ctx, postSignInLoginResponse.data.profile);
       sessionAtom(ctx, { isAuthenticated: true });
 
       toast.success('Sign in is successful 👍', {
@@ -132,9 +130,8 @@ export const confirmationSubmit = reatomAsync(async (ctx, payload) => {
     });
 
     if ('profile' in postTwoFactorAuthenticationResponse.data) {
-      localStorage.setItem(COOKIE.ACCESS_TOKEN, postTwoFactorAuthenticationResponse.data.token);
-
-      profileAtom(ctx, postTwoFactorAuthenticationResponse.data.profile);
+      tokenAtom(ctx, postTwoFactorAuthenticationResponse.data.token);
+      fetchProfile.dataAtom(ctx, postTwoFactorAuthenticationResponse.data.profile);
       sessionAtom(ctx, { isAuthenticated: true });
 
       router.navigate({
