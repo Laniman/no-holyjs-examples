@@ -10,6 +10,8 @@ import {
 
 import { getGithubCards, putGithubCard } from '@/utils/api';
 
+import { updateCardDebounced } from './helpers/updateCardDebounced';
+
 export const cardsEntriesAtom = atom<Record<string, { isDragging: boolean } & GithubCard>>(
   {},
   'cardsEntriesAtom'
@@ -59,30 +61,23 @@ export const setDragging = action((ctx, { id, isDragging }) => {
   selectAtom(ctx, (prev) => ({ ...prev, id: isDragging ? id : null }));
 }, 'setDragging');
 
-export const positionChange = action(
-  concurrent(async (ctx, payload) => {
-    const { position } = payload;
-    const { id, offset } = ctx.get(selectAtom);
-    if (!id) return;
-    const card = ctx.get(cardsEntriesAtom)[id];
-    const updatedCard = {
-      ...card,
-      position: {
-        x: position.x + offset.x - card.size.width / 2,
-        y: position.y + offset.y - card.size.height / 2
-      }
-    };
+export const positionChange = action(async (ctx, payload) => {
+  const { position } = payload;
+  const { id, offset } = ctx.get(selectAtom);
+  if (!id) return;
+  const card = ctx.get(cardsEntriesAtom)[id];
+  const updatedCard = {
+    ...card,
+    position: {
+      x: position.x + offset.x - card.size.width / 2,
+      y: position.y + offset.y - card.size.height / 2
+    }
+  };
 
-    cardsEntriesAtom(ctx, (prev) => ({ ...prev, [id]: updatedCard }));
+  cardsEntriesAtom(ctx, (prev) => ({ ...prev, [id]: updatedCard }));
 
-    console.log(123);
-    await ctx.schedule(() => sleep(500));
-    console.log(4);
-    await putGithubCard({ params: { ...updatedCard, id } });
-    console.log(5);
-  }),
-  'positionChange'
-);
+  updateCardDebounced(id, updatedCard);
+}, 'positionChange');
 
 export const incrementReaction = action(
   concurrent(async (ctx, payload) => {
