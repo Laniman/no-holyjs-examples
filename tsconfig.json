@@ -23,7 +23,8 @@
       "@/*": ["./src/*"],
       "@react-hooks/*": ["./src/apps/react-hooks/*"],
       "@redux-saga-variant/*": ["./src/apps/redux-saga-variant/*"],
-      "@redux-thunk-variant/*": ["./src/apps/redux-thunk-variant/*"]
+      "@redux-thunk-variant/*": ["./src/apps/redux-thunk-variant/*"],
+      "@reatom-variant/*": ["./src/apps/reatom-variant/*"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx"],
