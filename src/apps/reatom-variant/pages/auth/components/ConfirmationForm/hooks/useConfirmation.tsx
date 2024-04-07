@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useAtom, useCtx } from '@reatom/npm-react';
 
 import {
-  confirmationFormLoading,
+  confirmationFormLoadingAtom,
   confirmationSubmit,
   otpAtom,
   otpCountdownAtom,
@@ -19,7 +19,7 @@ interface ConfirmationFormForm {
 export const useConfirmationForm = () => {
   const ctx = useCtx();
 
-  const [loading] = useAtom((ctx) => ctx.spy(confirmationFormLoading));
+  const [loading] = useAtom((ctx) => ctx.spy(confirmationFormLoadingAtom));
   const [otp] = useAtom((ctx) => ctx.spy(otpAtom));
   const [otpCountdown] = useAtom((ctx) => Number((ctx.spy(otpCountdownAtom) / 1000).toFixed(0)));
 

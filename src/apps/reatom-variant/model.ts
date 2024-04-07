@@ -1,5 +1,6 @@
 import { atom, reatomAsync, withDataAtom } from '@reatom/framework';
 import { withLocalStorage } from '@reatom/persist-web-storage';
+
 import { COOKIE } from '@/utils';
 import { getProfile } from '@/utils/api';
 
@@ -21,4 +22,4 @@ export const fetchProfile = reatomAsync(async (ctx) => {
   sessionAtom(ctx, { isAuthenticated: true });
 
   return getProfileApiResponse.data.profile;
-}).pipe(withDataAtom({} as Profile));
+}, 'fetchProfile').pipe(withDataAtom({} as Profile));

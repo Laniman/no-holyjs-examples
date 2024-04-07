@@ -1,7 +1,7 @@
 import { useAtom, useCtx } from '@reatom/npm-react';
 
 import {
-  cardsEntries,
+  cardsEntriesAtom,
   fetchCards,
   incrementReaction,
   positionChange,
@@ -13,7 +13,7 @@ export const useGithubCard = (id: number) => {
   const ctx = useCtx();
   const [card] = useAtom((ctx) => {
     const remote = ctx.spy(fetchCards.dataAtom).find((card) => card.id === id);
-    const local = ctx.spy(cardsEntries)[id];
+    const local = ctx.spy(cardsEntriesAtom)[id];
     return { ...remote, ...local };
   });
 

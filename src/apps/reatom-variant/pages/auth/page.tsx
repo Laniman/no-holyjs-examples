@@ -17,4 +17,4 @@ const component: Record<any, React.ReactNode> = {
 export const AuthPage = reatomComponent(({ ctx }) => {
   const stage = ctx.spy(stageAtom).value;
   return component[stage];
-});
+}, 'AuthPage');

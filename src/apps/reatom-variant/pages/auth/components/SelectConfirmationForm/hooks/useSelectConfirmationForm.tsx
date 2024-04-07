@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import type { CheckedState } from '@radix-ui/react-checkbox';
 import { useCtx } from '@reatom/npm-react';
 
-import { selectConfirmationFormLoading, selectConfirmationSubmit } from '../../../model';
+import { selectConfirmationFormLoadingAtom, selectConfirmationSubmit } from '../../../model';
 import { selectConfirmationEmailSchema, selectConfirmationPhoneSchema } from '../constants';
 
 interface SelectConfirmationForm {
@@ -13,7 +13,7 @@ interface SelectConfirmationForm {
 
 export const useSelectConfirmationForm = () => {
   const ctx = useCtx();
-  const loading = ctx.get(selectConfirmationFormLoading);
+  const loading = ctx.get(selectConfirmationFormLoadingAtom);
 
   const [selectConfirmationFormStage, setSelectConfirmationFormStage] = React.useState<
     'select' | 'form'

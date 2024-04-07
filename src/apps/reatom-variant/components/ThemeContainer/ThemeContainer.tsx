@@ -16,4 +16,4 @@ export const ThemeContainer = reatomComponent<ThemeProviderProps>(({ ctx, childr
   }, [theme]);
 
   return <>{children}</>;
-});
+}, 'ThemeContainer');

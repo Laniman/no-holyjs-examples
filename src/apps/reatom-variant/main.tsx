@@ -1,7 +1,7 @@
 import ReactDOM from 'react-dom/client';
 
 import { App } from './app';
-import { tokenAtom, fetchProfile } from './model';
+import { fetchProfile, tokenAtom } from './model';
 import Providers from './providers';
 import { ctx } from './reatom';
 

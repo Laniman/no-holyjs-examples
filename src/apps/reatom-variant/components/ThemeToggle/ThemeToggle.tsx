@@ -15,4 +15,4 @@ export const ThemeToggle = reatomComponent(({ ctx }) => {
       {theme === 'dark' && <MoonIcon className='h-6 w-6 text-gray-500' />}
     </Toggle>
   );
-});
+}, 'ThemeToggle');

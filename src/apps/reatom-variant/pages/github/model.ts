@@ -4,7 +4,10 @@ import { getGithubCards } from '@/utils/api';
 
 import { updateCardDebounced } from './helpers/updateCardDebounced.ts';
 
-export const cardsEntries = atom<Record<string, { isDragging: boolean } & GithubCard>>({});
+export const cardsEntriesAtom = atom<Record<string, { isDragging: boolean } & GithubCard>>(
+  {},
+  'cardsEntriesAtom'
+);
 
 export const fetchCards = reatomAsync(
   async () => {
@@ -12,13 +15,14 @@ export const fetchCards = reatomAsync(
     return getGithubCardsResponse.data.githubCards;
   },
   {
+    name: 'fetchCards',
     onFulfill: (ctx) => {
       const cards = ctx.get(fetchCards.dataAtom);
       const byId = cards.reduce(
         (acc, card) => ({ ...acc, [card.id]: { ...card, isDragging: false } }),
         {}
       );
-      cardsEntries(ctx, byId);
+      cardsEntriesAtom(ctx, byId);
     }
   }
 ).pipe(withDataAtom([]), withErrorAtom());
@@ -39,21 +43,21 @@ const initialState: SelectState = {
   }
 };
 
-export const selectAtom = atom(initialState, 'select');
+export const selectAtom = atom(initialState, 'selectAtom');
 
 export const setDragging = action((ctx, { id, isDragging }) => {
-  const byId = ctx.get(cardsEntries);
+  const byId = ctx.get(cardsEntriesAtom);
   const updated = { ...byId[id], isDragging };
 
-  cardsEntries(ctx, (prev) => ({ ...prev, [id]: updated }));
+  cardsEntriesAtom(ctx, (prev) => ({ ...prev, [id]: updated }));
   selectAtom(ctx, (prev) => ({ ...prev, id: isDragging ? id : null }));
-});
+}, 'setDragging');
 
 export const positionChange = action((ctx, payload) => {
   const { position } = payload;
   const { id, offset } = ctx.get(selectAtom);
   if (!id) return;
-  const card = ctx.get(cardsEntries)[id];
+  const card = ctx.get(cardsEntriesAtom)[id];
   const updatedCard = {
     ...card,
     position: {
@@ -61,14 +65,14 @@ export const positionChange = action((ctx, payload) => {
       y: position.y + offset.y - card.size.height / 2
     }
   };
-  cardsEntries(ctx, (prev) => ({ ...prev, [id]: updatedCard }));
+  cardsEntriesAtom(ctx, (prev) => ({ ...prev, [id]: updatedCard }));
   // TODO optimistic
   updateCardDebounced(id, updatedCard);
-});
+}, 'positionChange');
 
 export const incrementReaction = action((ctx, payload) => {
   const { id, reaction } = payload;
-  const entries = ctx.get(cardsEntries);
+  const entries = ctx.get(cardsEntriesAtom);
 
   const updatedCard = {
     ...entries[id],
@@ -78,7 +82,7 @@ export const incrementReaction = action((ctx, payload) => {
     }
   };
 
-  cardsEntries(ctx, (prev) => ({ ...prev, [id]: updatedCard }));
+  cardsEntriesAtom(ctx, (prev) => ({ ...prev, [id]: updatedCard }));
   // TODO optimistic
   updateCardDebounced(id, updatedCard);
-});
+}, 'incrementReaction');

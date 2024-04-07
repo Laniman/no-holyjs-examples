@@ -4,7 +4,7 @@ import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
-import { cardsEntries, fetchCards, incrementReaction, selectAtom } from '../../model';
+import { cardsEntriesAtom, fetchCards, incrementReaction, selectAtom } from '../../model';
 
 interface CardInfoProps {
   id: number;
@@ -12,7 +12,7 @@ interface CardInfoProps {
 
 const CardInfo = ({ id }: CardInfoProps) => {
   const ctx = useCtx();
-  const [card] = useAtom((ctx) => ctx.spy(cardsEntries)[id]);
+  const [card] = useAtom((ctx) => ctx.spy(cardsEntriesAtom)[id]);
 
   return (
     <div className='flex gap-2'>
@@ -37,7 +37,7 @@ const CardInfo = ({ id }: CardInfoProps) => {
 };
 
 const ReactionCount = () => {
-  const [cardsEntities] = useAtom(cardsEntries);
+  const [cardsEntities] = useAtom(cardsEntriesAtom);
 
   const reactionsCount = Object.values(cardsEntities).reduce((acc, cardsEntity) => {
     return acc + Object.values(cardsEntity.reactions).reduce((acc, value) => acc + value, 0);

@@ -22,6 +22,8 @@ export const otpAtom = atom<{ type: 'email' | 'phone'; resource: string; retryDe
   },
   'otpAtom'
 );
+
+// eslint-disable-next-line @reatom/reatom-prefix-rule
 export const otpCountdownAtom = reatomTimer({
   name: 'otpCountdownAtom',
   interval: 1000, // `1000`ms - tick each second. Than lower, then more precise
@@ -88,9 +90,9 @@ export const signInSubmit = reatomAsync(async (ctx, payload) => {
   }
 }, 'signInSubmit');
 
-export const signInFormLoading = atom((ctx) => {
+export const signInFormLoadingAtom = atom((ctx) => {
   return ctx.spy(signInSubmit.pendingAtom) > 0;
-}, 'signInFormLoading');
+}, 'signInFormLoadingAtom');
 
 export const selectConfirmationSubmit = reatomAsync(async (ctx, payload) => {
   try {
@@ -113,9 +115,9 @@ export const selectConfirmationSubmit = reatomAsync(async (ctx, payload) => {
   }
 }, 'selectConfirmationSubmit');
 
-export const selectConfirmationFormLoading = atom((ctx) => {
+export const selectConfirmationFormLoadingAtom = atom((ctx) => {
   return ctx.spy(selectConfirmationSubmit.pendingAtom) > 0;
-}, 'selectConfirmationFormLoading');
+}, 'selectConfirmationFormLoadingAtom');
 
 export const confirmationSubmit = reatomAsync(async (ctx, payload) => {
   try {
@@ -144,9 +146,9 @@ export const confirmationSubmit = reatomAsync(async (ctx, payload) => {
   }
 }, 'confirmationSubmit');
 
-export const confirmationFormLoading = atom((ctx) => {
+export const confirmationFormLoadingAtom = atom((ctx) => {
   return ctx.spy(confirmationSubmit.pendingAtom) > 0;
-}, 'confirmationFormLoading');
+}, 'confirmationFormLoadingAtom');
 
 export const otpResend = reatomAsync(async (ctx) => {
   try {
@@ -170,7 +172,7 @@ export const otpResend = reatomAsync(async (ctx) => {
   } catch (error) {
     console.error(error);
   }
-});
+}, 'otpResend');
 
 export const signUpSubmit = reatomAsync(async (ctx, payload) => {
   try {
