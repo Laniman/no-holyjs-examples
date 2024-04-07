@@ -6,6 +6,12 @@ import { getProfile } from '@/utils/api';
 
 export const themeAtom = atom('light', 'themeAtom').pipe(withLocalStorage(COOKIE.THEME));
 
+themeAtom.onChange((_, theme) => {
+  const root = window.document.documentElement;
+  root.classList.remove('light', 'dark');
+  root.classList.add(theme);
+});
+
 export const tokenAtom = atom<null | string>(null, 'tokenAtom').pipe(
   withLocalStorage(COOKIE.ACCESS_TOKEN)
 );
