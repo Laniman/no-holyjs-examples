@@ -1,8 +1,11 @@
+import type { RecordAtom } from '@reatom/framework';
 import {
   action,
   atom,
   concurrent,
   reatomAsync,
+  reatomMap,
+  reatomRecord,
   sleep,
   withDataAtom,
   withErrorAtom
@@ -16,7 +19,13 @@ interface GithubCardDragging extends GithubCard {
   isDragging: boolean;
 }
 
-export const cardsEntriesAtom = atom<Record<string, GithubCardDragging>>({}, 'cardsEntriesAtom');
+const reatomCard = (card: GithubCardDragging): RecordAtom<GithubCardDragging> =>
+  reatomRecord(card, `card-${card.id}`);
+
+export const cardsEntriesAtom = reatomMap<number, RecordAtom<GithubCardDragging>>(
+  new Map(),
+  'cardsEntriesAtom'
+);
 
 export const fetchCards = reatomAsync(
   async () => {
@@ -27,11 +36,10 @@ export const fetchCards = reatomAsync(
     name: 'fetchCards',
     onFulfill: (ctx) => {
       const cards = ctx.get(fetchCards.dataAtom);
-      const byId = cards.reduce<Record<string, GithubCardDragging>>(
-        (acc, card) => ({ ...acc, [card.id]: { ...card, isDragging: false } }),
-        {}
-      );
-      cardsEntriesAtom(ctx, byId);
+
+      cards.forEach((card) => {
+        cardsEntriesAtom.set(ctx, card.id, reatomCard({ ...card, isDragging: false }));
+      });
     }
   }
 ).pipe(withDataAtom([]), withErrorAtom());
@@ -55,48 +63,44 @@ const initialState: SelectState = {
 export const selectAtom = atom(initialState, 'selectAtom');
 
 export const setDragging = action((ctx, { id, isDragging }) => {
-  const byId = ctx.get(cardsEntriesAtom);
-  const updated = { ...byId[id], isDragging };
-
-  cardsEntriesAtom(ctx, (prev) => ({ ...prev, [id]: updated }));
+  cardsEntriesAtom.get(ctx, id)!.merge(ctx, { isDragging });
   selectAtom(ctx, (prev) => ({ ...prev, id: isDragging ? id : null }));
 }, 'setDragging');
 
 export const positionChange = action(async (ctx, payload) => {
   const { position } = payload;
   const { id, offset } = ctx.get(selectAtom);
+
   if (!id) return;
-  const card = ctx.get(cardsEntriesAtom)[id];
-  const updatedCard = {
-    ...card,
+
+  const cardAtom = cardsEntriesAtom.get(ctx, id)!;
+  const card = ctx.get(cardAtom);
+
+  cardAtom.merge(ctx, {
     position: {
       x: position.x + offset.x - card.size.width / 2,
       y: position.y + offset.y - card.size.height / 2
     }
-  };
+  });
 
-  cardsEntriesAtom(ctx, (prev) => ({ ...prev, [id]: updatedCard }));
-
-  await updateCardDebounced(id, updatedCard);
+  await updateCardDebounced(id, card);
 }, 'positionChange');
 
 export const incrementReaction = action(
   concurrent(async (ctx, payload) => {
     const { id, reaction } = payload;
-    const entries = ctx.get(cardsEntriesAtom);
+    const cardAtom = cardsEntriesAtom.get(ctx, id)!;
+    const card = ctx.get(cardAtom);
 
-    const updatedCard = {
-      ...entries[id],
+    cardAtom.merge(ctx, {
       reactions: {
-        ...entries[id].reactions,
-        [reaction]: entries[id].reactions[reaction] + 1
+        ...card.reactions,
+        [reaction]: card.reactions[reaction] + 1
       }
-    };
-
-    cardsEntriesAtom(ctx, (prev) => ({ ...prev, [id]: updatedCard }));
+    });
 
     await ctx.schedule(() => sleep(500));
-    await putGithubCard({ params: { ...updatedCard, id } });
+    await putGithubCard({ params: ctx.get(cardAtom) });
   }),
   'incrementReaction'
 );

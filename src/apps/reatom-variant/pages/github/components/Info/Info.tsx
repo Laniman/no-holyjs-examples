@@ -11,7 +11,7 @@ interface CardInfoProps {
 }
 
 const CardInfo = reatomComponent<CardInfoProps>(({ ctx, id }) => {
-  const card = ctx.spy(cardsEntriesAtom)[id];
+  const card = ctx.spy(cardsEntriesAtom.get(ctx, id)!);
 
   return (
     <div className='flex gap-2'>
@@ -38,8 +38,8 @@ const CardInfo = reatomComponent<CardInfoProps>(({ ctx, id }) => {
 const ReactionCount = reatomComponent(({ ctx }) => {
   const cardsEntities = ctx.spy(cardsEntriesAtom);
 
-  const reactionsCount = Object.values(cardsEntities).reduce((acc, cardsEntity) => {
-    return acc + Object.values(cardsEntity.reactions).reduce((acc, value) => acc + value, 0);
+  const reactionsCount = [...cardsEntities.values()].reduce<number>((acc, cardsAtom) => {
+    return acc + Object.values(ctx.spy(cardsAtom).reactions).reduce((acc, value) => acc + value, 0);
   }, 0);
 
   return (

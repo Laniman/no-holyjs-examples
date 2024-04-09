@@ -37,6 +37,7 @@
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-toggle": "^1.0.3",
     "@reatom/framework": "^3.4.35",
+    "@reatom/logger": "^3.6.0",
     "@reatom/npm-react": "^3.8.4",
     "@reatom/persist-web-storage": "^3.3.3",
     "@reatom/timer": "^3.6.0",
