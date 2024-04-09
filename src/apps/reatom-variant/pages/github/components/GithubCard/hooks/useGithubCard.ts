@@ -1,4 +1,4 @@
-import { useAtom, useCtx } from '@reatom/npm-react';
+import { useAction, useAtom } from '@reatom/npm-react';
 
 import {
   cardsEntriesAtom,
@@ -9,19 +9,21 @@ import {
 } from '../../../model';
 
 export const useGithubCard = (id: number) => {
-  const ctx = useCtx();
   const [card] = useAtom((ctx) => ctx.spy(cardsEntriesAtom.get(ctx, id)!));
 
-  const onSetDragging = (isDragging: boolean) => setDragging(ctx, { id, isDragging });
+  const onSetDragging = useAction((ctx, isDragging) => setDragging(ctx, { id, isDragging }));
 
-  const setOffset = (offset: { x: number; y: number }) =>
-    selectAtom(ctx, (prev) => ({ ...prev, offset }));
+  const setOffset = useAction((ctx, offset: { x: number; y: number }) =>
+    selectAtom(ctx, (prev) => ({ ...prev, offset }))
+  );
 
-  const onPositionChange = (position: { x: number; y: number }) =>
-    positionChange(ctx, { position });
+  const onPositionChange = useAction((ctx, position: { x: number; y: number }) =>
+    positionChange(ctx, { position })
+  );
 
-  const onIncrementReaction = (id: number, reaction: string) =>
-    incrementReaction(ctx, { id, reaction });
+  const onIncrementReaction = useAction((ctx, id: number, reaction: string) =>
+    incrementReaction(ctx, { id, reaction })
+  );
 
   return {
     state: { card },
