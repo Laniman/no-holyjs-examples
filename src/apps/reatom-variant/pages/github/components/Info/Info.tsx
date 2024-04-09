@@ -4,7 +4,13 @@ import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
-import { cardsEntriesAtom, fetchCards, incrementReaction, selectAtom } from '../../model';
+import {
+  cardsEntriesAtom,
+  fetchCards,
+  incrementReaction,
+  reactionsCountAtom,
+  selectAtom
+} from '../../model';
 
 interface CardInfoProps {
   id: number;
@@ -35,19 +41,14 @@ const CardInfo = reatomComponent<CardInfoProps>(({ ctx, id }) => {
   );
 }, 'CardInfo');
 
-const ReactionCount = reatomComponent(({ ctx }) => {
-  const cardsEntities = ctx.spy(cardsEntriesAtom);
-
-  const reactionsCount = [...cardsEntities.values()].reduce<number>((acc, cardsAtom) => {
-    return acc + Object.values(ctx.spy(cardsAtom).reactions).reduce((acc, value) => acc + value, 0);
-  }, 0);
-
-  return (
+const ReactionCount = reatomComponent(
+  ({ ctx }) => (
     <p className='text-sm'>
-      reactions count: <b>{reactionsCount}</b>
+      reactions count: <b>{ctx.spy(reactionsCountAtom)}</b>
     </p>
-  );
-}, 'ReactionCount');
+  ),
+  'ReactionCount'
+);
 
 export const Info = reatomComponent(({ ctx }) => {
   const cards = ctx.spy(fetchCards.dataAtom);

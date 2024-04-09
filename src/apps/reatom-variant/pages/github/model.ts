@@ -104,3 +104,10 @@ export const incrementReaction = action(
   }),
   'incrementReaction'
 );
+
+export const reactionsCountAtom = atom((ctx) => {
+  const cardsEntities = ctx.spy(cardsEntriesAtom);
+  return [...cardsEntities.values()].reduce<number>((acc, cardsAtom) => {
+    return acc + Object.values(ctx.spy(cardsAtom).reactions).reduce((acc, value) => acc + value, 0);
+  }, 0);
+}, 'reactionsCountAtom');
