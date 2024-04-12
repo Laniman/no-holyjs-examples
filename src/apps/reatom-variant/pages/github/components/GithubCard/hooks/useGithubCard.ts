@@ -1,3 +1,4 @@
+import { parseAtoms } from '@reatom/framework';
 import { useAction, useAtom } from '@reatom/npm-react';
 
 import {
@@ -9,7 +10,7 @@ import {
 } from '../../../model';
 
 export const useGithubCard = (id: number) => {
-  const [card] = useAtom((ctx) => ctx.spy(cardsEntriesAtom.get(ctx, id)!));
+  const [card] = useAtom((ctx) => parseAtoms(ctx, cardsEntriesAtom.get(ctx, id)!));
 
   const onSetDragging = useAction((ctx, isDragging) => setDragging(ctx, { id, isDragging }));
 

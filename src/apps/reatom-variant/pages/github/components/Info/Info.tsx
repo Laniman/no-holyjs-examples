@@ -17,12 +17,12 @@ interface CardInfoProps {
 }
 
 const CardInfo = reatomComponent<CardInfoProps>(({ ctx, id }) => {
-  const card = ctx.spy(cardsEntriesAtom.get(ctx, id)!);
+  const card = cardsEntriesAtom.get(ctx, id)!;
 
   return (
     <div className='flex gap-2'>
       {card.title}
-      {Object.entries(card.reactions).map(([reaction, value]) => (
+      {Object.entries(ctx.spy(card.reactions)).map(([reaction, value]) => (
         <Badge
           key={reaction}
           className='cursor-pointer select-none'
