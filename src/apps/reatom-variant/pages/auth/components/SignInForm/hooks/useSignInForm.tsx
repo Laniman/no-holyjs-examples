@@ -1,10 +1,10 @@
 import React from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useCtx } from '@reatom/npm-react';
+import { useAtom, useCtx } from '@reatom/npm-react';
 import * as zod from 'zod';
 
-import { signInFormLoadingAtom, signInSubmit, stageAtom } from '../../../model';
+import { signInSubmit, stageAtom } from '../../../model';
 import { signInEmailSchema, signInLoginSchema } from '../constants';
 
 interface SingInForm {
@@ -15,7 +15,7 @@ interface SingInForm {
 export const useSignInForm = () => {
   const ctx = useCtx();
 
-  const loading = ctx.get(signInFormLoadingAtom);
+  const [loading] = useAtom(signInSubmit.loadingAtom);
 
   const [selectedResource, setSelectedResource] = React.useState<'login' | 'email'>('login');
 
@@ -24,6 +24,7 @@ export const useSignInForm = () => {
   });
 
   const login = useWatch({ control: signInForm.control, name: 'login' });
+
   React.useEffect(() => {
     const email = zod.string().email();
     const isEmail = email.safeParse(login);

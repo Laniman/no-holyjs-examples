@@ -2,9 +2,9 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { CheckedState } from '@radix-ui/react-checkbox';
-import { useCtx } from '@reatom/npm-react';
+import { useAtom, useCtx } from '@reatom/npm-react';
 
-import { selectConfirmationFormLoadingAtom, selectConfirmationSubmit } from '../../../model';
+import { selectConfirmationSubmit } from '../../../model';
 import { selectConfirmationEmailSchema, selectConfirmationPhoneSchema } from '../constants';
 
 interface SelectConfirmationForm {
@@ -13,7 +13,7 @@ interface SelectConfirmationForm {
 
 export const useSelectConfirmationForm = () => {
   const ctx = useCtx();
-  const loading = ctx.get(selectConfirmationFormLoadingAtom);
+  const [loading] = useAtom(selectConfirmationSubmit.loadingAtom);
 
   const [selectConfirmationFormStage, setSelectConfirmationFormStage] = React.useState<
     'select' | 'form'
@@ -28,6 +28,7 @@ export const useSelectConfirmationForm = () => {
       selectedResource === 'email' ? selectConfirmationEmailSchema : selectConfirmationPhoneSchema
     )
   });
+
   const onFormBack = () => {
     selectConfirmationForm.reset();
     setSelectConfirmationFormStage('select');

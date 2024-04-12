@@ -1,4 +1,4 @@
-import { atom, reatomAsync } from '@reatom/framework';
+import { atom, reatomAsync, withAssign } from '@reatom/framework';
 import { reatomTimer } from '@reatom/timer';
 import { fetchProfile, sessionAtom, tokenAtom } from '@reatom-variant/model';
 import { router } from '@redux-thunk-variant/router.ts';
@@ -13,7 +13,9 @@ import {
 } from '@/utils/api/requests';
 
 export type Stage = 'signIn' | 'signUp' | 'selectConfirmation' | 'confirmation';
+
 export const stageAtom = atom<{ value: Stage }>({ value: 'signIn' }, 'stageAtom');
+
 export const otpAtom = atom<{ type: 'email' | 'phone'; resource: string; retryDelay: number }>(
   {
     type: 'email',
@@ -21,16 +23,43 @@ export const otpAtom = atom<{ type: 'email' | 'phone'; resource: string; retryDe
     retryDelay: 0
   },
   'otpAtom'
-);
+).pipe(
+  withAssign((_, name) => ({
+    // eslint-disable-next-line @reatom/reatom-prefix-rule
+    countdownAtom: reatomTimer({
+      name: `${name}.countdownAtom`,
+      interval: 1000,
+      delayMultiplier: 1000,
+      progressPrecision: 2,
+      resetProgress: true
+    })
+  })),
+  withAssign((original, name) => ({
+    resend: reatomAsync(async (ctx) => {
+      try {
+        const otp = ctx.get(original);
+        const postOtp = otp.type === 'email' ? postOtpEmail : postOtpPhone;
 
-// eslint-disable-next-line @reatom/reatom-prefix-rule
-export const otpCountdownAtom = reatomTimer({
-  name: 'otpCountdownAtom',
-  interval: 1000, // `1000`ms - tick each second. Than lower, then more precise
-  delayMultiplier: 1000, // `1000`ms allow to pass seconds to startTimer. Use `1` to pass ms
-  progressPrecision: 2, // progress will be rounded to 2 digits after dot
-  resetProgress: true // progress will be reset to 0 on end of timer
-});
+        const postOtpResponse = await postOtp({
+          params: { [otp.type]: otp.resource } as Record<'email' | 'phone', string>
+        });
+
+        if (postOtpResponse.data.retryDelay) {
+          original.countdownAtom.startTimer(ctx, postOtpResponse.data.retryDelay / 1000);
+
+          original(ctx, {
+            ...otp,
+            retryDelay: postOtpResponse.data.retryDelay
+          });
+
+          stageAtom(ctx, { value: 'confirmation' });
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }, `${name}.otpResend`)
+  }))
+);
 
 export const signInSubmit = reatomAsync(async (ctx, payload) => {
   try {
@@ -49,7 +78,7 @@ export const signInSubmit = reatomAsync(async (ctx, payload) => {
         retryDelay: postOtpEmailResponse.data.retryDelay
       });
 
-      otpCountdownAtom.startTimer(ctx, postOtpEmailResponse.data.retryDelay / 1000);
+      otpAtom.countdownAtom.startTimer(ctx, postOtpEmailResponse.data.retryDelay / 1000);
       stageAtom(ctx, { value: 'confirmation' });
       return;
     }
@@ -88,11 +117,11 @@ export const signInSubmit = reatomAsync(async (ctx, payload) => {
   } catch (error) {
     console.error(error);
   }
-}, 'signInSubmit');
-
-export const signInFormLoadingAtom = atom((ctx) => {
-  return ctx.spy(signInSubmit.pendingAtom) > 0;
-}, 'signInFormLoadingAtom');
+}, 'signInSubmit').pipe(
+  withAssign((original, name) => ({
+    loadingAtom: atom((ctx) => ctx.spy(original.pendingAtom) > 0, `${name}.loadingAtom`)
+  }))
+);
 
 export const selectConfirmationSubmit = reatomAsync(async (ctx, payload) => {
   try {
@@ -113,11 +142,13 @@ export const selectConfirmationSubmit = reatomAsync(async (ctx, payload) => {
   } catch (error) {
     console.error(error);
   }
-}, 'selectConfirmationSubmit');
-
-export const selectConfirmationFormLoadingAtom = atom((ctx) => {
-  return ctx.spy(selectConfirmationSubmit.pendingAtom) > 0;
-}, 'selectConfirmationFormLoadingAtom');
+}, 'selectConfirmationSubmit').pipe(
+  withAssign((original, name) => ({
+    loadingAtom: atom((ctx) => {
+      return ctx.spy(original.pendingAtom) > 0;
+    }, `${name}.loadingAtom`)
+  }))
+);
 
 export const confirmationSubmit = reatomAsync(async (ctx, payload) => {
   try {
@@ -144,35 +175,13 @@ export const confirmationSubmit = reatomAsync(async (ctx, payload) => {
   } catch (error) {
     console.error(error);
   }
-}, 'confirmationSubmit');
-
-export const confirmationFormLoadingAtom = atom((ctx) => {
-  return ctx.spy(confirmationSubmit.pendingAtom) > 0;
-}, 'confirmationFormLoadingAtom');
-
-export const otpResend = reatomAsync(async (ctx) => {
-  try {
-    const otp = ctx.get(otpAtom);
-    const postOtp = otp.type === 'email' ? postOtpEmail : postOtpPhone;
-
-    const postOtpResponse = await postOtp({
-      params: { [otp.type]: otp.resource } as Record<'email' | 'phone', string>
-    });
-
-    if (postOtpResponse.data.retryDelay) {
-      otpCountdownAtom.startTimer(ctx, postOtpResponse.data.retryDelay / 1000);
-
-      otpAtom(ctx, {
-        ...otp,
-        retryDelay: postOtpResponse.data.retryDelay
-      });
-
-      stageAtom(ctx, { value: 'confirmation' });
-    }
-  } catch (error) {
-    console.error(error);
-  }
-}, 'otpResend');
+}, 'confirmationSubmit').pipe(
+  withAssign((original, name) => ({
+    loadingAtom: atom((ctx) => {
+      return ctx.spy(original.pendingAtom) > 0;
+    }, `${name}.loadingAtom`)
+  }))
+);
 
 export const signUpSubmit = reatomAsync(async (ctx, payload) => {
   try {
