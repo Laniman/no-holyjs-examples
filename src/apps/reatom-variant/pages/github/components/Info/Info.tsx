@@ -4,13 +4,7 @@ import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
-import {
-  cardsEntriesAtom,
-  fetchCards,
-  incrementReaction,
-  reactionsCountAtom,
-  selectAtom
-} from '../../model';
+import { cardsEntriesAtom, fetchCards, selectAtom } from '../../model';
 
 interface CardInfoProps {
   id: number;
@@ -28,7 +22,7 @@ const CardInfo = reatomComponent<CardInfoProps>(({ ctx, id }) => {
           className='cursor-pointer select-none'
           variant='outline'
           onClick={() =>
-            incrementReaction(ctx, {
+            cardsEntriesAtom.incrementReaction(ctx, {
               id: card.id,
               reaction
             })
@@ -44,7 +38,7 @@ const CardInfo = reatomComponent<CardInfoProps>(({ ctx, id }) => {
 const ReactionCount = reatomComponent(
   ({ ctx }) => (
     <p className='text-sm'>
-      reactions count: <b>{ctx.spy(reactionsCountAtom)}</b>
+      reactions count: <b>{ctx.spy(cardsEntriesAtom.reactionsCountAtom)}</b>
     </p>
   ),
   'ReactionCount'

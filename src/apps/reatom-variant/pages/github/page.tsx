@@ -6,7 +6,7 @@ import { GithubCard, Info } from './components';
 
 export const GithubPage = reatomComponent(({ ctx }) => {
   const cards = ctx.spy(fetchCards.dataAtom);
-  const loading = ctx.spy(fetchCards.pendingAtom) > 0;
+  const loading = ctx.spy(fetchCards.loadingAtom);
 
   return (
     <>

@@ -1,13 +1,7 @@
 import { parseAtoms } from '@reatom/framework';
 import { useAction, useAtom } from '@reatom/npm-react';
 
-import {
-  cardsEntriesAtom,
-  incrementReaction,
-  positionChange,
-  selectAtom,
-  setDragging
-} from '../../../model';
+import { cardsEntriesAtom, selectAtom, setDragging } from '../../../model';
 
 export const useGithubCard = (id: number) => {
   const [card] = useAtom((ctx) => parseAtoms(ctx, cardsEntriesAtom.get(ctx, id)!));
@@ -19,11 +13,11 @@ export const useGithubCard = (id: number) => {
   );
 
   const onPositionChange = useAction((ctx, position: { x: number; y: number }) =>
-    positionChange(ctx, { position })
+    cardsEntriesAtom.positionChange(ctx, { position })
   );
 
   const onIncrementReaction = useAction((ctx, id: number, reaction: string) =>
-    incrementReaction(ctx, { id, reaction })
+    cardsEntriesAtom.incrementReaction(ctx, { id, reaction })
   );
 
   return {
