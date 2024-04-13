@@ -1,6 +1,5 @@
 import { ThemeToggle } from '@reatom-variant/components/ThemeToggle/ThemeToggle';
 import { createRootRouteWithContext, Outlet } from '@tanstack/react-router';
-import { TanStackRouterDevtools } from '@tanstack/router-devtools';
 import { Toaster } from 'sonner';
 
 import sibericancodeIcon from '@/assets/images/sibericancode.svg';
@@ -26,7 +25,6 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         <Outlet />
       </div>
       <Toaster duration={TOASTER_DURATION} />
-      <TanStackRouterDevtools />
     </>
   )
 });

@@ -1,11 +1,10 @@
-import type { AtomMut, RecordAtom } from '@reatom/framework';
+import type { Action, Atom, RecordAtom } from '@reatom/framework';
 import {
   action,
   atom,
   concurrent,
   parseAtoms,
   reatomAsync,
-  reatomMap,
   reatomRecord,
   sleep,
   withAssign,
@@ -15,101 +14,81 @@ import {
 
 import { getGithubCards, putGithubCard } from '@/utils/api';
 
-import { updateCardDebounced } from './helpers/updateCardDebounced';
+interface GithubCardDragging extends GithubCard {}
 
-interface GithubCardDragging extends GithubCard {
-  isDragging: boolean;
-}
-
-type ReatomGithubCard = {
+export type ReatomGithubCard = {
   position: RecordAtom<{ x: number; y: number }>;
   reactions: RecordAtom<Record<string, number>>;
-  isDragging: AtomMut<boolean>;
-} & Omit<GithubCardDragging, 'position' | 'reactions' | 'isDragging'>;
+  isDraggingAtom: Atom<boolean>;
+  reactionsCount: Atom<number>;
+  positionChange: Action;
+  incrementReaction: Action;
+};
+
+export const draggingAtom = atom<null | GithubCardData>(null, 'draggingAtom');
 
 const reatomCard = (card: GithubCardDragging): ReatomGithubCard => {
-  const positionAtom = reatomRecord(card.position, 'positionAtom');
-  const reactionsAtom = reatomRecord(card.reactions, 'reactionsAtom');
-  const isDraggingAtom = atom(false, 'isDraggingAtom');
-  return {
-    ...card,
-    isDragging: isDraggingAtom,
-    position: positionAtom,
-    reactions: reactionsAtom
-  };
-};
+  const name = `card#${card.id}`;
 
-export interface SelectState {
-  id: GithubCardDragging['id'] | null;
-  offset: {
-    x: number;
-    y: number;
-  };
-}
+  const positionAtom = reatomRecord(card.position, `${name}.positionAtom`);
+  const reactionsAtom = reatomRecord(card.reactions, `${name}.reactionsAtom`);
 
-const initialState: SelectState = {
-  id: null,
-  offset: {
-    x: 0,
-    y: 0
-  }
-};
+  const prepareData = action(
+    (ctx) => ({
+      ...card,
+      position: parseAtoms(ctx, positionAtom),
+      reactions: parseAtoms(ctx, reactionsAtom)
+    }),
+    `${name}.prepareData`
+  );
 
-export const selectAtom = atom(initialState, 'selectAtom');
-
-export const cardsEntriesAtom = reatomMap<number, ReatomGithubCard>(
-  new Map(),
-  'cardsEntriesAtom'
-).pipe(
-  withAssign((originalAtom, name) => ({
-    allAtom: atom((ctx) => {
-      return [...ctx.spy(originalAtom).entries()];
-    }, `${name}.allAtom`)
-  })),
-  withAssign((originalAtom, name) => ({
-    positionChange: action(async (ctx, payload) => {
-      const { position } = payload;
-      const { id, offset } = ctx.get(selectAtom);
-
-      if (!id) return;
-
-      const card = originalAtom.get(ctx, id)!;
-
-      card.position.merge(ctx, {
-        x: position.x + offset.x - card.size.width / 2,
-        y: position.y + offset.y - card.size.height / 2
+  positionAtom.onChange(
+    concurrent(async (ctx) => {
+      await ctx.schedule(() => sleep(500));
+      await putGithubCard({
+        params: prepareData(ctx)
       });
+    })
+  );
 
-      await updateCardDebounced(id, parseAtoms(ctx, card));
-    }, `${name}.positionChange`),
-    incrementReaction: action(
-      concurrent(async (ctx, payload) => {
-        const { id, reaction } = payload;
-        const card = originalAtom.get(ctx, id)!;
+  reactionsAtom.onChange(
+    concurrent(async (ctx) => {
+      await ctx.schedule(() => sleep(500));
+      await putGithubCard({
+        params: prepareData(ctx)
+      });
+    })
+  );
 
-        card.reactions.merge(ctx, {
-          [reaction]: ctx.get(card.reactions)[reaction] + 1
-        });
+  const reactionsCountAtom = atom((ctx) => {
+    return Object.values(ctx.spy(reactionsAtom)).reduce((a, b) => a + b);
+  }, `${name}.reactionsCountAtom`);
 
-        await ctx.schedule(() => sleep(500));
-        await putGithubCard({ params: parseAtoms(ctx, card) });
-      }),
-      `${name}.incrementReaction`
+  const reatomCard: ReatomGithubCard = {
+    isDraggingAtom: atom(
+      (ctx) => reatomCard === ctx.spy(draggingAtom)?.reatomCard,
+      `${name}.isDraggingAtom`
     ),
-    reactionsCountAtom: atom((ctx) => {
-      const cardsEntities = ctx.spy(originalAtom.allAtom);
-      let count = 0;
+    position: positionAtom,
+    reactions: reactionsAtom,
+    reactionsCount: reactionsCountAtom,
+    positionChange: action((ctx, payload: { x: number; y: number }) => {
+      positionAtom.merge(ctx, payload);
+    }, `${name}.positionChange`),
+    incrementReaction: action((ctx, reaction: string) => {
+      reactionsAtom.merge(ctx, {
+        [reaction]: ctx.get(reactionsAtom)[reaction] + 1
+      });
+    }, `${name}.incrementReaction`)
+  };
 
-      for (const [, card] of cardsEntities) {
-        const reactions = ctx.spy(card.reactions);
-        const cardReactionsCount = Object.values(reactions).reduce((acc, num) => acc + num);
-        count += cardReactionsCount;
-      }
+  return reatomCard;
+};
 
-      return count;
-    }, `${name}.reactionsCountAtom`)
-  }))
-);
+export type GithubCardData = {
+  data: GithubCard;
+  reatomCard: ReatomGithubCard;
+};
 
 export const fetchCards = reatomAsync(
   async () => {
@@ -117,24 +96,24 @@ export const fetchCards = reatomAsync(
     return getGithubCardsResponse.data.githubCards;
   },
   {
-    name: 'fetchCards',
-    onFulfill: (ctx) => {
-      const cards = ctx.get(fetchCards.dataAtom);
-
-      cards.forEach((card) => {
-        cardsEntriesAtom.set(ctx, card.id, reatomCard({ ...card, isDragging: false }));
-      });
-    }
+    name: 'fetchCards'
   }
 ).pipe(
-  withDataAtom([]),
+  withDataAtom([], (_, cards) => {
+    return cards.map<GithubCardData>((card) => ({
+      data: card,
+      reatomCard: reatomCard(card)
+    }));
+  }),
   withErrorAtom(),
-  withAssign((fetchCards, name) => ({
-    loadingAtom: atom((ctx) => ctx.spy(fetchCards.pendingAtom) > 0, `${name}.loadingAtom`)
+  withAssign((original, name) => ({
+    loadingAtom: atom((ctx) => ctx.spy(original.pendingAtom) > 0, `${name}.loadingAtom`),
+    reactionsCountAtom: atom((ctx) => {
+      const cards = ctx.spy(original.dataAtom);
+      return cards.reduce(
+        (a, { reatomCard: { reactionsCount } }) => a + ctx.spy(reactionsCount),
+        0
+      );
+    }, `${name}.reactionsCountAtom`)
   }))
 );
-
-export const setDragging = action((ctx, { id, isDragging }) => {
-  cardsEntriesAtom.get(ctx, id)!.isDragging(ctx, isDragging);
-  selectAtom(ctx, (prev) => ({ ...prev, id: isDragging ? id : null }));
-}, 'setDragging');
