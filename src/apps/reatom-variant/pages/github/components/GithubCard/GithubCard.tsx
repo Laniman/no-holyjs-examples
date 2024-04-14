@@ -1,3 +1,4 @@
+import type { MouseEventHandler } from 'react';
 import { useRef } from 'react';
 import { reatomComponent } from '@reatom/npm-react';
 import type { GithubCardData } from '@reatom-variant/pages/github/model';
@@ -11,9 +12,30 @@ interface GithubCardProps {
 }
 
 export const GithubCard = reatomComponent<GithubCardProps>(({ ctx, card }) => {
-  const prevPositionRef = useRef<{ x: number; y: number } | null>(null);
+  const prevCoordRef = useRef<{ x: number; y: number } | null>(null);
   const positionX = ctx.spy(card.reatomCard.position).x;
   const positionY = ctx.spy(card.reatomCard.position).y;
+
+  const handleMouseMove: MouseEventHandler<HTMLDivElement> = (event) => {
+    if (prevCoordRef.current === null) return;
+
+    card.reatomCard.positionChange(ctx, {
+      x: positionX - prevCoordRef.current.x + event.clientX,
+      y: positionY - prevCoordRef.current.y + event.clientY
+    });
+
+    prevCoordRef.current = { x: event.clientX, y: event.clientY };
+  };
+
+  const handleMouseDown: MouseEventHandler<HTMLDivElement> = (event) => {
+    draggingAtom(ctx, card);
+    prevCoordRef.current = { x: event.clientX, y: event.clientY };
+  };
+
+  const handleMouseLeave: MouseEventHandler<HTMLDivElement> = () => {
+    draggingAtom(ctx, null);
+    prevCoordRef.current = null;
+  };
 
   return (
     <Card
@@ -27,28 +49,10 @@ export const GithubCard = reatomComponent<GithubCardProps>(({ ctx, card }) => {
         position: 'absolute',
         userSelect: 'none'
       }}
-      onMouseMove={(event) => {
-        if (prevPositionRef.current === null) return;
-
-        card.reatomCard.positionChange(ctx, {
-          x: positionX - prevPositionRef.current.x + event.clientX,
-          y: positionY - prevPositionRef.current.y + event.clientY
-        });
-
-        prevPositionRef.current = { x: event.clientX, y: event.clientY };
-      }}
-      onMouseDown={(event) => {
-        draggingAtom(ctx, card);
-        prevPositionRef.current = { x: event.clientX, y: event.clientY };
-      }}
-      onMouseLeave={() => {
-        draggingAtom(ctx, null);
-        prevPositionRef.current = null;
-      }}
-      onMouseUp={() => {
-        draggingAtom(ctx, null);
-        prevPositionRef.current = null;
-      }}
+      onMouseMove={handleMouseMove}
+      onMouseDown={handleMouseDown}
+      onMouseLeave={handleMouseLeave}
+      onMouseUp={handleMouseLeave}
     >
       <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
         <CardTitle className='text-sm font-medium'>{card.data.id}</CardTitle>

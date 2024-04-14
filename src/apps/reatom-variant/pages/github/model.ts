@@ -14,8 +14,6 @@ import {
 
 import { getGithubCards, putGithubCard } from '@/utils/api';
 
-interface GithubCardDragging extends GithubCard {}
-
 export type ReatomGithubCard = {
   position: RecordAtom<{ x: number; y: number }>;
   reactions: RecordAtom<Record<string, number>>;
@@ -27,7 +25,7 @@ export type ReatomGithubCard = {
 
 export const draggingAtom = atom<null | GithubCardData>(null, 'draggingAtom');
 
-const reatomCard = (card: GithubCardDragging): ReatomGithubCard => {
+const reatomCard = (card: GithubCard): ReatomGithubCard => {
   const name = `card#${card.id}`;
 
   const positionAtom = reatomRecord(card.position, `${name}.positionAtom`);
@@ -64,9 +62,9 @@ const reatomCard = (card: GithubCardDragging): ReatomGithubCard => {
     return Object.values(ctx.spy(reactionsAtom)).reduce((a, b) => a + b);
   }, `${name}.reactionsCountAtom`);
 
-  const reatomCard: ReatomGithubCard = {
+  const reatomGithubCard: ReatomGithubCard = {
     isDraggingAtom: atom(
-      (ctx) => reatomCard === ctx.spy(draggingAtom)?.reatomCard,
+      (ctx) => reatomGithubCard === ctx.spy(draggingAtom)?.reatomCard,
       `${name}.isDraggingAtom`
     ),
     position: positionAtom,
@@ -82,7 +80,7 @@ const reatomCard = (card: GithubCardDragging): ReatomGithubCard => {
     }, `${name}.incrementReaction`)
   };
 
-  return reatomCard;
+  return reatomGithubCard;
 };
 
 export type GithubCardData = {
