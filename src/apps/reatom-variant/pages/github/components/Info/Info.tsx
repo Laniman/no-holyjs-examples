@@ -51,7 +51,7 @@ export const Info = reatomComponent(({ ctx }) => {
         </div>
 
         <Sheet>
-          <SheetTrigger>
+          <SheetTrigger asChild>
             <Button>Open</Button>
           </SheetTrigger>
           <SheetContent className='flex justify-center overflow-y-auto p-4 sm:max-w-[450px]'>
