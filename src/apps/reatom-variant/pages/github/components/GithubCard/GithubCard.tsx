@@ -13,7 +13,7 @@ interface GithubCardProps {
 
 export const GithubCard = reatomComponent<GithubCardProps>(({ ctx, card }) => {
   const prevCoordRef = useRef<{ x: number; y: number } | null>(null);
-  const position = ctx.spy(card.position)
+  const position = ctx.spy(card.position);
 
   const handleMouseMove: MouseEventHandler<HTMLDivElement> = (event) => {
     if (prevCoordRef.current === null) return;

@@ -15,11 +15,11 @@ import {
 import { getGithubCards, putGithubCard } from '@/utils/api';
 
 export type GithubCardModel = {
-  id: GithubCard['id']
-  size: GithubCard['size']
-  title: GithubCard['title']
-  description: GithubCard['description']
-  image: GithubCard['image']
+  id: GithubCard['id'];
+  size: GithubCard['size'];
+  title: GithubCard['title'];
+  description: GithubCard['description'];
+  image: GithubCard['image'];
   position: RecordAtom<{ x: number; y: number }>;
   reactions: RecordAtom<Record<string, number>>;
   isDragging: Atom<boolean>;
@@ -41,10 +41,7 @@ const reatomCard = (card: GithubCard): GithubCardModel => {
 
   const model: GithubCardModel = {
     ...card,
-    isDragging: atom(
-      (ctx) => model === ctx.spy(dragging),
-      `${name}.isDragging`
-    ),
+    isDragging: atom((ctx) => model === ctx.spy(dragging), `${name}.isDragging`),
     position,
     reactions,
     reactionsCount,
@@ -55,39 +52,34 @@ const reatomCard = (card: GithubCard): GithubCardModel => {
     }, `${name}.incrementReaction`)
   };
 
-
-
-  const sync = action(concurrent(async (ctx) => {
-    await ctx.schedule(() => sleep(500));
-    await putGithubCard({
-      params: parseAtoms(ctx, model)
-    });
-  }), `${name}.sync`)
+  const sync = action(
+    concurrent(async (ctx) => {
+      await ctx.schedule(() => sleep(500));
+      await putGithubCard({
+        params: parseAtoms(ctx, model)
+      });
+    }),
+    `${name}.sync`
+  );
 
   for (const target of [position, reactions]) {
-    target.onChange(sync)
+    target.onChange(sync);
   }
 
   return model;
 };
 
-export const fetchCards = reatomAsync(
-  async () => {
-    const getGithubCardsResponse = await getGithubCards();
-    return getGithubCardsResponse.data.githubCards;
-  },
-  'fetchCards'
-).pipe(
+export const fetchCards = reatomAsync(async () => {
+  const getGithubCardsResponse = await getGithubCards();
+  return getGithubCardsResponse.data.githubCards;
+}, 'fetchCards').pipe(
   withDataAtom([], (_, cards) => cards.map((card) => reatomCard(card))),
   withErrorAtom(),
   withAssign((original, name) => ({
     loadingAtom: atom((ctx) => ctx.spy(original.pendingAtom) > 0, `${name}.loadingAtom`),
     reactionsCount: atom((ctx) => {
       const cards = ctx.spy(original.dataAtom);
-      return cards.reduce(
-        (a, { reactionsCount }) => a + ctx.spy(reactionsCount),
-        0
-      );
+      return cards.reduce((a, { reactionsCount }) => a + ctx.spy(reactionsCount), 0);
     }, `${name}.reactionsCount`)
   }))
 );
