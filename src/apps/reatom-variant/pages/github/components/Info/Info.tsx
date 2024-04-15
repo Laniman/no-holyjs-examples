@@ -4,23 +4,23 @@ import { Button } from '@/components/ui';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
-import type { GithubCardData } from '../../model';
-import { draggingAtom, fetchCards } from '../../model';
+import type { GithubCardModel } from '../../model';
+import { dragging, fetchCards } from '../../model';
 
 interface CardInfoProps {
-  card: GithubCardData;
+  card: GithubCardModel;
 }
 
 const CardInfo = reatomComponent<CardInfoProps>(({ ctx, card }) => {
   return (
     <div className='flex gap-2'>
-      {card.data.title}
-      {Object.entries(ctx.spy(card.reatomCard.reactions)).map(([reaction, value]) => (
+      {card.title}
+      {Object.entries(ctx.spy(card.reactions)).map(([reaction, value]) => (
         <Badge
           key={reaction}
           className='cursor-pointer select-none'
           variant='outline'
-          onClick={() => card.reatomCard.incrementReaction(ctx, reaction)}
+          onClick={() => card.incrementReaction(ctx, reaction)}
         >
           {reaction} {value}
         </Badge>
@@ -32,7 +32,7 @@ const CardInfo = reatomComponent<CardInfoProps>(({ ctx, card }) => {
 const ReactionCount = reatomComponent(
   ({ ctx }) => (
     <p className='text-sm'>
-      reactions count: <b>{ctx.spy(fetchCards.reactionsCountAtom)}</b>
+      reactions count: <b>{ctx.spy(fetchCards.reactionsCount)}</b>
     </p>
   ),
   'ReactionCount'
@@ -40,7 +40,7 @@ const ReactionCount = reatomComponent(
 
 export const Info = reatomComponent(({ ctx }) => {
   const cards = ctx.spy(fetchCards.dataAtom);
-  const draggingCard = ctx.spy(draggingAtom);
+  const draggingCard = ctx.spy(dragging);
 
   return (
     <div className='absolute left-5 top-20'>
@@ -59,7 +59,7 @@ export const Info = reatomComponent(({ ctx }) => {
               <SheetTitle>Cards</SheetTitle>
               <div className='flex flex-col gap-2'>
                 {cards.map((card) => (
-                  <CardInfo key={card.data.id} card={card} />
+                  <CardInfo key={card.id} card={card} />
                 ))}
               </div>
             </SheetHeader>
@@ -69,7 +69,7 @@ export const Info = reatomComponent(({ ctx }) => {
 
       {draggingCard && (
         <p className='text-sm'>
-          selected: <b>{draggingCard.data.id}</b>
+          selected: <b>{draggingCard.id}</b>
         </p>
       )}
     </div>

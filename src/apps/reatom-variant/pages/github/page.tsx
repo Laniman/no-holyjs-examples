@@ -17,7 +17,7 @@ export const GithubPage = reatomComponent(({ ctx }) => {
           </div>
         )}
         {cards.map((card) => (
-          <GithubCard key={card.data.id} card={card} />
+          <GithubCard key={card.id} card={card} />
         ))}
       </div>
       {!!cards.length && <Info />}
