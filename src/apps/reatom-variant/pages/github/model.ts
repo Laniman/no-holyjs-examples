@@ -3,6 +3,7 @@ import {
   action,
   atom,
   concurrent,
+  omit,
   parseAtoms,
   reatomAsync,
   reatomRecord,
@@ -27,6 +28,7 @@ export type GithubCardModel = {
   incrementReaction: Action;
 };
 
+/* eslint-disable-next-line @reatom/atom-postfix-rule */
 export const dragging = atom<null | GithubCardModel>(null, 'dragging');
 
 const reatomCard = (card: GithubCard): GithubCardModel => {
@@ -35,12 +37,14 @@ const reatomCard = (card: GithubCard): GithubCardModel => {
   const position = reatomRecord(card.position, `${name}.position`);
   const reactions = reatomRecord(card.reactions, `${name}.reactions`);
 
+  // eslint-disable-next-line @reatom/atom-postfix-rule
   const reactionsCount = atom((ctx) => {
     return Object.values(ctx.spy(reactions)).reduce((a, b) => a + b);
   }, `${name}.reactionsCount`);
 
   const model: GithubCardModel = {
     ...card,
+    // eslint-disable-next-line @reatom/atom-postfix-rule
     isDragging: atom((ctx) => model === ctx.spy(dragging), `${name}.isDragging`),
     position,
     reactions,
@@ -55,8 +59,13 @@ const reatomCard = (card: GithubCard): GithubCardModel => {
   const sync = action(
     concurrent(async (ctx) => {
       await ctx.schedule(() => sleep(500));
+      const card = omit(parseAtoms(ctx, model), [
+        'reactionsCount',
+        'incrementReaction',
+        'isDragging'
+      ]);
       await putGithubCard({
-        params: parseAtoms(ctx, model)
+        params: card
       });
     }),
     `${name}.sync`
@@ -76,7 +85,9 @@ export const fetchCards = reatomAsync(async () => {
   withDataAtom([], (_, cards) => cards.map((card) => reatomCard(card))),
   withErrorAtom(),
   withAssign((original, name) => ({
-    loadingAtom: atom((ctx) => ctx.spy(original.pendingAtom) > 0, `${name}.loadingAtom`),
+    // eslint-disable-next-line @reatom/atom-postfix-rule
+    loading: atom((ctx) => ctx.spy(original.pendingAtom) > 0, `${name}.loading`),
+    // eslint-disable-next-line @reatom/atom-postfix-rule
     reactionsCount: atom((ctx) => {
       const cards = ctx.spy(original.dataAtom);
       return cards.reduce((a, { reactionsCount }) => a + ctx.spy(reactionsCount), 0);

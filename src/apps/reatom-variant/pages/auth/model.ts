@@ -1,7 +1,7 @@
 import { atom, reatomAsync, withAssign } from '@reatom/framework';
 import { reatomTimer } from '@reatom/timer';
 import { fetchProfile, sessionAtom, tokenAtom } from '@reatom-variant/model';
-import { router } from '@redux-thunk-variant/router.ts';
+import { router } from '@redux-thunk-variant/router';
 import { toast } from 'sonner';
 
 import {

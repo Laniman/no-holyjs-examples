@@ -1,12 +1,12 @@
 import { reatomComponent } from '@reatom/npm-react';
-import { fetchCards } from '@reatom-variant/pages/github/model.ts';
+import { fetchCards } from '@reatom-variant/pages/github/model';
 import { Loader2 } from 'lucide-react';
 
 import { GithubCard, Info } from './components';
 
 export const GithubPage = reatomComponent(({ ctx }) => {
   const cards = ctx.spy(fetchCards.dataAtom);
-  const loading = ctx.spy(fetchCards.loadingAtom);
+  const loading = ctx.spy(fetchCards.loading);
 
   return (
     <>
