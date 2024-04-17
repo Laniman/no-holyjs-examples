@@ -13,7 +13,7 @@ interface SelectConfirmationForm {
 
 export const useSelectConfirmationForm = () => {
   const ctx = useCtx();
-  const [loading] = useAtom(selectConfirmationSubmit.loadingAtom);
+  const [loading] = useAtom(selectConfirmationSubmit.loading);
 
   const [selectConfirmationFormStage, setSelectConfirmationFormStage] = React.useState<
     'select' | 'form'

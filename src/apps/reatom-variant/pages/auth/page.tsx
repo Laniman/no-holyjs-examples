@@ -5,7 +5,7 @@ import { ConfirmationForm } from './components/ConfirmationForm/ConfirmationForm
 import { SelectConfirmationForm } from './components/SelectConfirmationForm/SelectConfirmationForm';
 import { SignInForm } from './components/SignInForm/SignInForm';
 import { SignUpForm } from './components/SignUpForm/SignUpForm';
-import { stageAtom } from './model';
+import { stage } from './model';
 
 const component: Record<any, React.ReactNode> = {
   signIn: <SignInForm />,
@@ -15,6 +15,5 @@ const component: Record<any, React.ReactNode> = {
 };
 
 export const AuthPage = reatomComponent(({ ctx }) => {
-  const stage = ctx.spy(stageAtom).value;
-  return component[stage];
+  return component[ctx.spy(stage).value];
 }, 'AuthPage');

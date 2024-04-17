@@ -2,7 +2,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAtom, useCtx } from '@reatom/npm-react';
 
-import { signUpSubmit, stageAtom } from '../../../model';
+import { signUpSubmit, stage } from '../../../model';
 import { signUpSchema } from '../constants';
 import { COUNTRIES } from '../constants/countries';
 
@@ -22,7 +22,7 @@ interface SingUpForm {
 
 export const useSignUpForm = () => {
   const ctx = useCtx();
-  const [loading] = useAtom((ctx) => ctx.spy(signUpSubmit.pendingAtom) > 0);
+  const [loading] = useAtom((ctx) => ctx.spy(signUpSubmit.loading));
 
   const signUpForm = useForm<SingUpForm>({
     defaultValues: {
@@ -31,7 +31,7 @@ export const useSignUpForm = () => {
     resolver: zodResolver(signUpSchema)
   });
 
-  const goToSignIn = () => stageAtom(ctx, { value: 'signIn' });
+  const goToSignIn = () => stage(ctx, { value: 'signIn' });
 
   const onSubmit = signUpForm.handleSubmit((values) => signUpSubmit(ctx, { values }));
 

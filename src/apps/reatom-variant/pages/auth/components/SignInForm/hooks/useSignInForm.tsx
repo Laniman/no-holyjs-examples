@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useAtom, useCtx } from '@reatom/npm-react';
 import * as zod from 'zod';
 
-import { signInSubmit, stageAtom } from '../../../model';
+import { signInSubmit, stage } from '../../../model';
 import { signInEmailSchema, signInLoginSchema } from '../constants';
 
 interface SingInForm {
@@ -15,7 +15,7 @@ interface SingInForm {
 export const useSignInForm = () => {
   const ctx = useCtx();
 
-  const [loading] = useAtom(signInSubmit.loadingAtom);
+  const [loading] = useAtom(signInSubmit.loading);
 
   const [selectedResource, setSelectedResource] = React.useState<'login' | 'email'>('login');
 
@@ -35,7 +35,7 @@ export const useSignInForm = () => {
     signInSubmit(ctx, { values, resource: selectedResource });
   });
 
-  const goToSignUp = () => stageAtom(ctx, { value: 'signUp' });
+  const goToSignUp = () => stage(ctx, { value: 'signUp' });
 
   return {
     state: {

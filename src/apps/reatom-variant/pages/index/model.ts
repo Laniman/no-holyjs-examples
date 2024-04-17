@@ -1,10 +1,10 @@
 import { action } from '@reatom/framework';
-import { sessionAtom, tokenAtom } from '@reatom-variant/model';
-import { router } from '@redux-thunk-variant/router';
+import { session, token } from '@reatom-variant/model';
+import { router } from '@reatom-variant/router';
 
 export const logout = action((ctx) => {
-  tokenAtom(ctx, null);
-  sessionAtom(ctx, { isAuthenticated: false });
+  token(ctx, null);
+  session(ctx, { isAuthenticated: false });
 
   router.navigate({
     to: '/auth',

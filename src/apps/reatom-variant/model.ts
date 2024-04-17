@@ -6,11 +6,11 @@ import { getProfile } from '@/utils/api';
 
 type Theme = 'light' | 'dark';
 
-export const themeAtom = atom<Theme>('light', 'themeAtom').pipe(
+export const theme = atom<Theme>('light', 'theme').pipe(
   withInit((ctx, init) => {
-    const theme = init(ctx);
-    themeAtom.set(ctx, theme);
-    return theme;
+    const current = init(ctx);
+    theme.set(ctx, current);
+    return current;
   }),
   withLocalStorage(COOKIE.THEME),
   withAssign((_, name) => ({
@@ -18,26 +18,33 @@ export const themeAtom = atom<Theme>('light', 'themeAtom').pipe(
       const root = window.document.documentElement;
       root.classList.remove('light', 'dark');
       root.classList.add(theme);
-    }, `${name}.setTheme`)
+    }, `${name}.set`)
+  })),
+  withAssign((original, name) => ({
+    toggle: action((ctx) => {
+      if (ctx.get(original) === 'light') {
+        original(ctx, 'dark');
+      } else {
+        original(ctx, 'light');
+      }
+    }, `${name}.toggle`)
   }))
 );
 
-themeAtom.onChange(themeAtom.set);
+theme.onChange(theme.set);
 
-export const tokenAtom = atom<null | string>(null, 'tokenAtom').pipe(
-  withLocalStorage(COOKIE.ACCESS_TOKEN)
-);
+export const token = atom<null | string>(null, 'token').pipe(withLocalStorage(COOKIE.ACCESS_TOKEN));
 
-export const sessionAtom = atom(
+export const session = atom(
   {
     isAuthenticated: false
   },
-  'sessionAtom'
+  'session'
 );
 
 export const fetchProfile = reatomAsync(async (ctx) => {
   const getProfileApiResponse = await getProfile();
-  sessionAtom(ctx, { isAuthenticated: true });
+  session(ctx, { isAuthenticated: true });
 
   return getProfileApiResponse.data.profile;
 }, 'fetchProfile').pipe(withDataAtom({} as Profile));

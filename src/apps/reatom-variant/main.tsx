@@ -1,7 +1,7 @@
 import ReactDOM from 'react-dom/client';
 
 import { App } from './app';
-import { fetchProfile, tokenAtom } from './model';
+import { fetchProfile, token } from './model';
 import Providers from './providers';
 import { ctx } from './reatom';
 
@@ -9,9 +9,7 @@ const rootElement = document.getElementById('root')!;
 const root = ReactDOM.createRoot(rootElement);
 
 const init = async () => {
-  const token = ctx.get(tokenAtom);
-
-  if (token) {
+  if (ctx.get(token)) {
     await fetchProfile(ctx);
   }
 
