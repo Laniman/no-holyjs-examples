@@ -1,3 +1,6 @@
+import { reatomComponent } from '@reatom/npm-react';
+import { confirmationSubmit, otp } from '@reatom-variant/pages/auth/model.ts';
+
 import { SpinnerIcon } from '@/components/icons';
 import {
   Button,
@@ -13,27 +16,29 @@ import {
 import { hideResource } from './helpers/hideResource';
 import { useConfirmationForm } from './hooks/useConfirmation';
 
-export const ConfirmationForm = () => {
-  const { form, state, functions } = useConfirmationForm();
+export const ConfirmationForm = reatomComponent(({ ctx }) => {
+  const loading = ctx.spy(confirmationSubmit.loading) || ctx.spy(otp.resend.pendingAtom) > 0;
+  const seconds = Number((ctx.spy(otp.countdown) / 1000).toFixed(0));
+  const otpValue = ctx.spy(otp);
+
+  const { form } = useConfirmationForm();
+
+  const handleFormSubmit = form.handleSubmit((values) => confirmationSubmit(ctx, { values }));
+
+  const onOtpResend = () => otp.resend(ctx);
 
   return (
     <div className='mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]'>
       <div className='flex flex-col space-y-2 text-center'>
         <h1 className='text-2xl font-semibold tracking-tight'>Two factor authentication</h1>
         <p className='text-sm text-muted-foreground'>
-          We sent you a code to your {state.otp.type}{' '}
-          {hideResource(state.otp.resource, state.otp.type)}
+          We sent you a code to your {otpValue.type}{' '}
+          {hideResource(otpValue.resource, otpValue.type)}
         </p>
       </div>
       <div className='grid gap-2'>
         <Form {...form}>
-          <form
-            onSubmit={(event) => {
-              event.preventDefault();
-              functions.onSubmit();
-            }}
-            className='space-y-4'
-          >
+          <form onSubmit={handleFormSubmit} className='space-y-4'>
             <FormField
               control={form.control}
               name='otp'
@@ -50,7 +55,7 @@ export const ConfirmationForm = () => {
                       autoCapitalize='none'
                       autoComplete='otp'
                       autoCorrect='off'
-                      disabled={state.loading}
+                      disabled={loading}
                       {...field}
                     />
                   </FormControl>
@@ -59,26 +64,26 @@ export const ConfirmationForm = () => {
               )}
             />
             <div className='flex flex-col gap-2'>
-              <Button type='submit' className='w-full' disabled={state.loading}>
-                {state.loading && <SpinnerIcon className='mr-2 h-4 w-4 animate-spin' />}
+              <Button type='submit' className='w-full' disabled={loading}>
+                {loading && <SpinnerIcon className='mr-2 h-4 w-4 animate-spin' />}
                 Confirm
               </Button>
-              {!!state.seconds && (
+              {!!seconds && (
                 <div>
                   <p className='text-center text-sm text-muted-foreground'>
-                    try again after {state.seconds} seconds
+                    try again after {seconds} seconds
                   </p>
                 </div>
               )}
-              {!state.seconds && (
+              {!seconds && (
                 <Button
                   type='button'
                   variant='outline'
                   className='w-full'
-                  disabled={state.loading}
-                  onClick={functions.onOtpResend}
+                  disabled={loading}
+                  onClick={onOtpResend}
                 >
-                  {state.loading && <SpinnerIcon className='mr-2 h-4 w-4 animate-spin' />}
+                  {loading && <SpinnerIcon className='mr-2 h-4 w-4 animate-spin' />}
                   Send otp
                 </Button>
               )}
@@ -88,4 +93,4 @@ export const ConfirmationForm = () => {
       </div>
     </div>
   );
-};
+}, 'ConfirmationForm');

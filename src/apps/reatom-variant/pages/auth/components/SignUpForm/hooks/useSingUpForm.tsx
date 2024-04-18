@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useAtom, useCtx } from '@reatom/npm-react';
+import { useCtx } from '@reatom/npm-react';
 
 import { signUpSubmit, stage } from '../../../model';
 import { signUpSchema } from '../constants';
@@ -22,7 +22,6 @@ interface SingUpForm {
 
 export const useSignUpForm = () => {
   const ctx = useCtx();
-  const [loading] = useAtom((ctx) => ctx.spy(signUpSubmit.loading));
 
   const signUpForm = useForm<SingUpForm>({
     defaultValues: {
@@ -40,7 +39,6 @@ export const useSignUpForm = () => {
 
   return {
     state: {
-      loading,
       isPasswordsEqual,
       countries: COUNTRIES
     },

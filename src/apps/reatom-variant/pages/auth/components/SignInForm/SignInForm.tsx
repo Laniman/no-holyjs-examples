@@ -1,3 +1,6 @@
+import { reatomComponent } from '@reatom/npm-react';
+import { signInSubmit } from '@reatom-variant/pages/auth/model.ts';
+
 import { SpinnerIcon } from '@/components/icons';
 import {
   Button,
@@ -15,7 +18,8 @@ import { AuthButtonsContainer } from '../AuthButtonsContainer/AuthButtonsContain
 
 import { useSignInForm } from './hooks/useSignInForm';
 
-export const SignInForm = () => {
+export const SignInForm = reatomComponent(({ ctx }) => {
+  const loading = ctx.spy(signInSubmit.loading);
   const { form, functions, state } = useSignInForm();
 
   return (
@@ -47,7 +51,7 @@ export const SignInForm = () => {
                       placeholder='write login or email'
                       autoCapitalize='none'
                       autoCorrect='off'
-                      disabled={state.loading}
+                      disabled={loading}
                       {...field}
                       // onChange={signInForm.onChange('login')}
                     />
@@ -72,7 +76,7 @@ export const SignInForm = () => {
                         autoCapitalize='none'
                         autoComplete='password'
                         autoCorrect='off'
-                        disabled={state.loading}
+                        disabled={loading}
                         {...field}
                       />
                     </FormControl>
@@ -82,18 +86,18 @@ export const SignInForm = () => {
               />
             )}
 
-            <Button type='submit' className='w-full' disabled={state.loading}>
-              {state.loading && <SpinnerIcon className='mr-2 h-4 w-4 animate-spin' />}
+            <Button type='submit' className='w-full' disabled={loading}>
+              {loading && <SpinnerIcon className='mr-2 h-4 w-4 animate-spin' />}
               Sign in
             </Button>
           </form>
         </Form>
         <div className='flex justify-center'>
-          <Button disabled={state.loading} variant='link' onClick={functions.goToSignUp}>
+          <Button disabled={loading} variant='link' onClick={functions.goToSignUp}>
             <span className='bg-background px-2 text-muted-foreground'>create new account</span>
           </Button>
         </div>
-        <AuthButtonsContainer loading={state.loading} />
+        <AuthButtonsContainer loading={loading} />
 
         <p className='mt-4 px-8 text-center text-sm text-muted-foreground'>
           By clicking continue, you agree to our{' '}
@@ -108,4 +112,4 @@ export const SignInForm = () => {
       </div>
     </div>
   );
-};
+}, 'SignInForm');

@@ -1,3 +1,5 @@
+import { reatomComponent } from '@reatom/npm-react';
+import { signUpSubmit } from '@reatom-variant/pages/auth/model.ts';
 import { Check, ChevronsUpDown } from 'lucide-react';
 
 import { SpinnerIcon } from '@/components/icons';
@@ -28,7 +30,8 @@ import { AuthButtonsContainer } from '../AuthButtonsContainer/AuthButtonsContain
 
 import { useSignUpForm } from './hooks/useSingUpForm';
 
-export const SignUpForm = () => {
+export const SignUpForm = reatomComponent(({ ctx }) => {
+  const loading = ctx.spy(signUpSubmit.loading);
   const { form, state, functions } = useSignUpForm();
 
   return (
@@ -63,7 +66,7 @@ export const SignUpForm = () => {
                       autoCapitalize='none'
                       autoComplete='email'
                       autoCorrect='off'
-                      disabled={state.loading}
+                      disabled={loading}
                       {...field}
                     />
                   </FormControl>
@@ -85,7 +88,7 @@ export const SignUpForm = () => {
                       placeholder='your login'
                       autoCapitalize='none'
                       autoCorrect='off'
-                      disabled={state.loading}
+                      disabled={loading}
                       {...field}
                     />
                   </FormControl>
@@ -108,7 +111,7 @@ export const SignUpForm = () => {
                       autoCapitalize='none'
                       autoComplete='firstName'
                       autoCorrect='off'
-                      disabled={state.loading}
+                      disabled={loading}
                       {...field}
                     />
                   </FormControl>
@@ -131,7 +134,7 @@ export const SignUpForm = () => {
                       autoCapitalize='none'
                       autoComplete='lastName'
                       autoCorrect='off'
-                      disabled={state.loading}
+                      disabled={loading}
                       {...field}
                     />
                   </FormControl>
@@ -216,7 +219,7 @@ export const SignUpForm = () => {
                       autoCapitalize='none'
                       autoComplete='password'
                       autoCorrect='off'
-                      disabled={state.loading}
+                      disabled={loading}
                       {...field}
                     />
                   </FormControl>
@@ -239,7 +242,7 @@ export const SignUpForm = () => {
                       autoCapitalize='none'
                       autoComplete='passwordConfirmation'
                       autoCorrect='off'
-                      disabled={state.loading}
+                      disabled={loading}
                       {...field}
                     />
                   </FormControl>
@@ -253,21 +256,21 @@ export const SignUpForm = () => {
                 </FormItem>
               )}
             />
-            <Button className='w-full' disabled={state.loading}>
-              {state.loading && <SpinnerIcon className='mr-2 h-4 w-4 animate-spin' />}
+            <Button className='w-full' disabled={loading}>
+              {loading && <SpinnerIcon className='mr-2 h-4 w-4 animate-spin' />}
               Sign up
             </Button>
           </form>
         </Form>
 
         <div className='flex justify-center '>
-          <Button disabled={state.loading} variant='link' onClick={functions.goToSignIn}>
+          <Button disabled={loading} variant='link' onClick={functions.goToSignIn}>
             <span className='bg-background px-2 text-muted-foreground'>have account already</span>
           </Button>
         </div>
 
-        <AuthButtonsContainer loading={state.loading} />
+        <AuthButtonsContainer loading={loading} />
       </div>
     </div>
   );
-};
+}, 'SignUpForm');

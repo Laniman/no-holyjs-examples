@@ -1,4 +1,6 @@
 import { PatternFormat } from 'react-number-format';
+import { reatomComponent } from '@reatom/npm-react';
+import { selectConfirmationSubmit } from '@reatom-variant/pages/auth/model.ts';
 
 import { SpinnerIcon } from '@/components/icons';
 import {
@@ -17,7 +19,8 @@ import {
 
 import { useSelectConfirmationForm } from './hooks/useSelectConfirmationForm';
 
-export const SelectConfirmationForm = () => {
+export const SelectConfirmationForm = reatomComponent(({ ctx }) => {
+  const loading = ctx.spy(selectConfirmationSubmit.loading);
   const { state, functions, form } = useSelectConfirmationForm();
 
   return (
@@ -122,18 +125,18 @@ export const SelectConfirmationForm = () => {
                     </FormItem>
                   )}
                 />
-                <Button type='submit' className='w-full' disabled={state.loading}>
-                  {state.loading && <SpinnerIcon className='mr-2 h-4 w-4 animate-spin' />}
+                <Button type='submit' className='w-full' disabled={loading}>
+                  {loading && <SpinnerIcon className='mr-2 h-4 w-4 animate-spin' />}
                   Confirm
                 </Button>
                 <Button
                   type='button'
                   variant='outline'
                   className='w-full'
-                  disabled={state.loading}
+                  disabled={loading}
                   onClick={functions.onFormBack}
                 >
-                  {state.loading && <SpinnerIcon className='mr-2 h-4 w-4 animate-spin' />}
+                  {loading && <SpinnerIcon className='mr-2 h-4 w-4 animate-spin' />}
                   Back
                 </Button>
               </form>
@@ -143,4 +146,4 @@ export const SelectConfirmationForm = () => {
       )}
     </div>
   );
-};
+}, 'SelectConfirmationForm');
